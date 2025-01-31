@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="history-container">
+        <h2>Upload History</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th>Size (Bytes)</th>
+                    <th>Upload Date</th>
+                    <th>File Path</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in history %}
+                <tr>
+                    <td>{{ record['Filename'] }}</td>
+                    <td>{{ record['File Size (Bytes)'] }}</td>
+                    <td>{{ record['Upload Date'] }}</td>
+                    <td>{{ record['File Path'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('upload') }}">Back to Upload</a>
+    </div>
+</body>
+</html>

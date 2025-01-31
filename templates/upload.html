@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Folder – Coop Data Cleaner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Coop Data Cleaner</h1>
+        <nav>
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+        </nav>
+    </header>
+
+    <main class="upload-container">
+        <div class="upload-box">
+            <h2>Upload Folder of Pictures</h2>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <form id="upload-form" method="POST" enctype="multipart/form-data">
+                <label class="file-label" for="folder-input">Select Folder</label>
+                <input type="file" id="folder-input" name="files" webkitdirectory directory multiple required>
+                <button type="submit">Upload Folder</button>
+            </form>
+            <p class="info-text">Supported file types: JPEG, PNG, GIF</p>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('folder-input').addEventListener('change', function(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                alert(`Selected ${files.length} files from the folder.`);
+            }
+        });
+    </script>
+</body>
+</html>
