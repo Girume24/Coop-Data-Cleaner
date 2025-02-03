@@ -1,45 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Folder – Coop Data Cleaner</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Upload Excel File – Coop Data Cleaner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='upload.css') }}">
 </head>
+
 <body>
+    <!-- Top Navigation Bar -->
     <header>
-        <h1>Coop Data Cleaner</h1>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Coop Data Cleaner Logo">
+            <h1>Coop Data Cleaner</h1>
+        </div>
         <nav>
             <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
         </nav>
     </header>
 
-    <main class="upload-container">
-        <div class="upload-box">
-            <h2>Upload Folder of Pictures</h2>
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
+    <div class="container">
+        <!-- Left Navigation Bar -->
+        <nav class="sidebar">
+            <div class="sidebar-background"></div>
+            <ul>
+                <li><a href="#">Upload History</a></li>
+                <li><a href="#">Feedback</a></li>
+                <li><a href="#">Contacts</a></li>
+                <li><a href="#">Settings</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Combined Upload and Guide Section -->
+            <div class="content-wrapper">
+                <!-- Upload Box -->
+                <div class="upload-box">
+                    <h2>Upload Excel File</h2>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
                     {% endfor %}
-                {% endif %}
-            {% endwith %}
-            <form id="upload-form" method="POST" enctype="multipart/form-data">
-                <label class="file-label" for="folder-input">Select Folder</label>
-                <input type="file" id="folder-input" name="files" webkitdirectory directory multiple required>
-                <button type="submit">Upload Folder</button>
-            </form>
-            <p class="info-text">Supported file types: JPEG, PNG, GIF</p>
-        </div>
-    </main>
+                    {% endif %}
+                    {% endwith %}
+                    <form id="upload-form" method="POST" enctype="multipart/form-data">
+                        <label class="file-label" for="file-input">Select Excel File</label>
+                        <input type="file" id="file-input" name="file" accept=".xlsx, .xls" required>
+                        <button type="submit">Upload and Process</button>
+                    </form>
+                    <p class="info-text">Supported file types: Excel (.xlsx, .xls)</p>
+
+                    <!-- Download Button (Hidden by Default) -->
+                    <div id="download-section" class="hidden">
+                        <p>Your file is ready! Click the button below to download.</p>
+                        <a id="download-link" class="download-btn" href="#" download>Download Grouped Data</a>
+                    </div>
+                </div>
+
+                <!-- Guide Box -->
+                <div class="guide-box">
+                    <h3>How It Works</h3>
+                    <ol>
+                        <li>Select an Excel file with "Account Number" and "File Name" columns.</li>
+                        <li>Click "Upload and Process" to send the file for processing.</li>
+                        <li>Wait for the system to group the data using AI.</li>
+                        <li>Download the grouped data as an Excel file.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Uploaded Files Section (Outside Content Wrapper) -->
+            <div class="uploaded-files">
+                <h3>Uploaded Files</h3>
+                <ul id="file-list">
+                    <!-- Files will be displayed here dynamically -->
+                </ul>
+            </div>
+        </main>
+
+    </div>
 
     <script>
-        document.getElementById('folder-input').addEventListener('change', function(event) {
-            const files = event.target.files;
-            if (files.length > 0) {
-                alert(`Selected ${files.length} files from the folder.`);
+        // Show the download button and set the download link
+        function showDownloadButton(downloadUrl) {
+            const downloadSection = document.getElementById('download-section');
+            const downloadLink = document.getElementById('download-link');
+            downloadLink.href = downloadUrl;
+            downloadSection.classList.remove('hidden');
+        }
+
+        // Handle form submission
+        document.getElementById('upload-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.download_url) {
+                    showDownloadButton(result.download_url);
+                }
+            } else {
+                alert('An error occurred. Please try again.');
             }
         });
     </script>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.download_url) {
+                    showDownloadButton(result.download_url);
+                }
+                if (result.file_name) {
+                    displayUploadedFile(result.file_name);
+                }
+            } else {
+                alert('An error occurred. Please try again.');
+            }
+        });
+
+        function displayUploadedFile(fileName) {
+            const fileList = document.getElementById('file-list');
+            const listItem = document.createElement('li');
+            listItem.textContent = fileName;
+            fileList.appendChild(listItem);
+        }
+    </script>
+
 </body>
+
 </html>

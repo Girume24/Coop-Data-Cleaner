@@ -1,0 +1,278 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #f8f9fa;
+}
+
+/* Style for the logo container */
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+/* Logo image styling */
+.logo-container img {
+    height: 50px;
+    margin-right: 15px;
+    filter: drop-shadow(2px 2px 5px rgba(0, 0, 0, 2.8)); /* Adds a soft shadow */
+}
+
+/* Top Navigation Bar */
+header {
+    width: 100%;
+    background-color: #00adef;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 24px;
+}
+
+nav {
+    padding-right: 20px;
+}
+
+.logout-btn {
+    background-color: white;
+    color: #00adef;
+    padding: 8px 12px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.logout-btn:hover {
+    background-color: #e4e6eb;
+}
+
+/* Container */
+.container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Left Navigation Bar */
+.sidebar {
+    width: 250px;
+    background-color: #2c3e50; /* Dark background color */
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background: linear-gradient(135deg, #1e3c72, #2a5298); /* Gradient background */
+    z-index: -1;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.sidebar ul li {
+    margin-bottom: 15px;
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    display: block;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar ul li a:hover {
+    background-color: #34495e; 
+}
+
+/* Main Content */
+.main-content {
+    display: flex;
+    justify-content: space-between; /* Ensures space between content-wrapper and uploaded-files */
+    align-items: flex-start; /* Align items to the top */
+    padding: 150px 180px 40px 40px;
+    background-color: #f8f9fa;
+    overflow: hidden; /* Prevents horizontal scrolling */
+    width: 100%; /* Make sure it takes the full width */
+    flex-grow: 1; /* Ensures it expands properly */
+    box-sizing: border-box; /* Prevents padding from shrinking the width */
+    gap: 40px; /* Adds space between content-wrapper and uploaded-files */
+}
+
+/* Content Wrapper */
+.content-wrapper {
+    display: flex;
+    gap: 40px;
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    min-width: 0; /* Prevents it from forcing extra space */
+}
+
+/* Upload Box */
+.upload-box {
+    flex: 1;
+    padding: 20px;
+    text-align: center;
+}
+
+.upload-box h2 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+/* File Input */
+.file-label {
+    display: block;
+    background-color: #00adef;
+    color: white;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.upload-box input[type="file"] {
+    display: none;
+}
+
+/* Upload Button */
+.upload-box button {
+    width: 100%;
+    padding: 12px;
+    background-color: #28a745;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.upload-box button:hover {
+    background-color: #218838;
+}
+
+/* Download Button */
+.download-btn {
+    display: inline-block;
+    width: 100%;
+    padding: 12px;
+    background-color: #00adef;
+    color: white;
+    font-size: 16px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.download-btn:hover {
+    background-color: #0099cc;
+}
+
+/* Hidden Section */
+.hidden {
+    display: none;
+}
+
+/* Additional Info */
+.info-text {
+    font-size: 14px;
+    color: #606770;
+    margin-top: 10px;
+}
+
+/* Guide Box */
+.guide-box {
+    flex: 1;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.guide-box h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.guide-box ol {
+    padding-left: 20px;
+}
+
+.guide-box ol li {
+    margin-bottom: 10px;
+}
+
+/* Alert Messages */
+.alert {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* Uploaded Files Section */
+.uploaded-files {
+    /* flex: 1; */
+    /* width: 300px;  */
+    padding: 20px;
+    /* border-radius: 8px; */
+    /* box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); */
+    flex-shrink: 0; /* Prevents it from shrinking */
+    /* background: white; Add background color */
+}
+
+.uploaded-files h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.uploaded-files ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.uploaded-files ul li {
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    font-size: 14px;
+}

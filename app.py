@@ -1,8 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
-import os
 import pandas as pd
-import datetime
-from werkzeug.utils import secure_filename
+import os
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -13,20 +11,22 @@ USER_CREDENTIALS = {
     'password': 'password'
 }
 
-# Define allowed file extensions
-ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
-
-# File paths for storing uploads and history
-UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
-HISTORY_FILE = os.path.join(os.getcwd(), 'upload_history.csv')
-
-# Ensure the upload folder exists
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+# Define allowed file extensions for Excel files
+ALLOWED_EXTENSIONS = {'xlsx', 'xls'}
 
 # Function to check if a file has an allowed extension
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Function to call your colleague's AI system (replace with actual API/function call)
+def call_ai_system(data):
+    """
+    Simulates calling the AI system to group account numbers and photos.
+    Replace this with the actual API call or function call to your colleague's system.
+    """
+    # Example: Simulate grouping by account number
+    grouped_data = data.groupby('Account Number')['File Name'].apply(list).reset_index()
+    return grouped_data
 
 @app.route('/')
 def home():
@@ -51,74 +51,47 @@ def upload():
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        if 'files' not in request.files:
-            flash('No files uploaded. Please select a folder.', 'error')
+        # Check if a file was uploaded
+        if 'file' not in request.files:
+            flash('No file uploaded. Please select an Excel file.', 'error')
             return redirect(request.url)
 
-        files = request.files.getlist('files')
-        if len(files) == 0:
-            flash('No files selected. Please select a folder.', 'error')
+        file = request.files['file']
+
+        # Check if the file has a filename
+        if file.filename == '':
+            flash('No file selected. Please select an Excel file.', 'error')
             return redirect(request.url)
 
-        # Collect information about the uploaded images
-        image_data = []
-        for file in files:
-            if file.filename != '':
-                if file.filename.lower() in ['desktop.ini', 'thumbs.db']:
-                    continue  # Skip system files
+        # Check if the file has an allowed extension
+        if file and allowed_file(file.filename):
+            # Read the Excel file
+            df = pd.read_excel(file)
 
-                if allowed_file(file.filename):
-                    filename = secure_filename(file.filename)
-                    file_path = os.path.join(UPLOAD_FOLDER, filename)
-                    file.save(file_path)
+            # Check if the required columns exist
+            if 'Account Number' not in df.columns or 'File Name' not in df.columns:
+                flash('The Excel file must contain "Account Number" and "File Name" columns.', 'error')
+                return redirect(request.url)
 
-                    # Record file details
-                    file_info = {
-                        'Filename': filename,
-                        'File Size (Bytes)': os.path.getsize(file_path),
-                        'Upload Date': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                        'File Path': file_path
-                    }
-                    image_data.append(file_info)
+            # Call the AI system to group the data
+            grouped_data = call_ai_system(df)
 
-        if image_data:
-            # Convert to DataFrame and save history
-            df = pd.DataFrame(image_data)
-            excel_filename = 'image_data.xlsx'
-            excel_path = os.path.join(UPLOAD_FOLDER, excel_filename)
-            df.to_excel(excel_path, index=False)
+            # Save the grouped data to a new Excel file
+            output_filename = 'grouped_data.xlsx'
+            grouped_data.to_excel(output_filename, index=False)
 
-            # Append to history
-            save_upload_history(image_data)
-
-            return send_file(excel_path, as_attachment=True)
+            # Send the new Excel file to the user for download
+            return send_file(output_filename, as_attachment=True)
+        else:
+            flash('Invalid file type. Please upload an Excel file.', 'error')
 
     return render_template('upload.html')
 
-def save_upload_history(image_data):
-    """Save uploaded files information to a CSV for history tracking."""
-    df = pd.DataFrame(image_data)
-
-    # If history file exists, append new data
-    if os.path.exists(HISTORY_FILE):
-        existing_df = pd.read_csv(HISTORY_FILE)
-        df = pd.concat([existing_df, df], ignore_index=True)
-
-    df.to_csv(HISTORY_FILE, index=False)
-
-@app.route('/history')
-def history():
-    """Display upload history."""
+@app.route('/success')
+def success():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-
-    if os.path.exists(HISTORY_FILE):
-        history_df = pd.read_csv(HISTORY_FILE)
-        history_records = history_df.to_dict(orient='records')  # Convert to list of dictionaries
-    else:
-        history_records = []
-
-    return render_template('history.html', history=history_records)
+    return render_template('success.html')
 
 @app.route('/logout')
 def logout():
