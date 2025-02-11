@@ -82,60 +82,59 @@
         </main>
 
     </div>
+    <!-- Loader -->
+    <div class="loader" id="loader">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">Processing your file... Please wait.</div>
+        </div>
+    </div>
 
     <script>
-        // Show the download button and set the download link
+        document.getElementById('upload-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            // Show the loader
+            const loader = document.getElementById('loader');
+            loader.style.display = 'flex';
+    
+            const formData = new FormData(this);
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                // Hide the loader
+                loader.style.display = 'none';
+    
+                // Check if response is JSON
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const result = await response.json();
+                    if (result.download_url) {
+                        showDownloadButton(result.download_url);
+                    }
+                    if (result.file_name) {
+                        displayUploadedFile(result.file_name);
+                    }
+                } else {
+                    // If response is not JSON, show an error
+                    const errorText = await response.text();
+                    alert("Error: " + errorText);
+                }
+            } catch (error) {
+                alert("An error occurred: " + error.message);
+            }
+        });
+    
         function showDownloadButton(downloadUrl) {
             const downloadSection = document.getElementById('download-section');
             const downloadLink = document.getElementById('download-link');
             downloadLink.href = downloadUrl;
             downloadSection.classList.remove('hidden');
         }
-
-        // Handle form submission
-        document.getElementById('upload-form').addEventListener('submit', async function (event) {
-            event.preventDefault();
-
-            const formData = new FormData(this);
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                if (result.download_url) {
-                    showDownloadButton(result.download_url);
-                }
-            } else {
-                alert('An error occurred. Please try again.');
-            }
-        });
-    </script>
-
-    <script>
-        document.getElementById('upload-form').addEventListener('submit', async function (event) {
-            event.preventDefault();
-
-            const formData = new FormData(this);
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                if (result.download_url) {
-                    showDownloadButton(result.download_url);
-                }
-                if (result.file_name) {
-                    displayUploadedFile(result.file_name);
-                }
-            } else {
-                alert('An error occurred. Please try again.');
-            }
-        });
-
+    
         function displayUploadedFile(fileName) {
             const fileList = document.getElementById('file-list');
             const listItem = document.createElement('li');
@@ -143,6 +142,7 @@
             fileList.appendChild(listItem);
         }
     </script>
+    
 
 </body>
 

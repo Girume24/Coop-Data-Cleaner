@@ -1,32 +1,24 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
-import pandas as pd
+import requests
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file, jsonify
 import os
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-# Dummy user credentials for demonstration
+# FastAPI Backend URL
+FASTAPI_URL = "http://10.2.125.37:8000/process"  # Replace with actual URL
+
+# Dummy user credentials
 USER_CREDENTIALS = {
     'username': 'user',
     'password': 'password'
 }
 
-# Define allowed file extensions for Excel files
-ALLOWED_EXTENSIONS = {'xlsx', 'xls'}
+# Allowed file extensions
+ALLOWED_EXTENSIONS = {'xlsx', 'xls', 'csv'}
 
-# Function to check if a file has an allowed extension
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# Function to call your colleague's AI system (replace with actual API/function call)
-def call_ai_system(data):
-    """
-    Simulates calling the AI system to group account numbers and photos.
-    Replace this with the actual API call or function call to your colleague's system.
-    """
-    # Example: Simulate grouping by account number
-    grouped_data = data.groupby('Account Number')['File Name'].apply(list).reset_index()
-    return grouped_data
 
 @app.route('/')
 def home():
@@ -48,50 +40,39 @@ def login():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if not session.get('logged_in'):
-        return redirect(url_for('login'))
+        return jsonify({"error": "Unauthorized"}), 401
 
     if request.method == 'POST':
-        # Check if a file was uploaded
         if 'file' not in request.files:
-            flash('No file uploaded. Please select an Excel file.', 'error')
-            return redirect(request.url)
+            return jsonify({"error": "No file uploaded"}), 400
 
         file = request.files['file']
-
-        # Check if the file has a filename
         if file.filename == '':
-            flash('No file selected. Please select an Excel file.', 'error')
-            return redirect(request.url)
+            return jsonify({"error": "No file selected"}), 400
 
-        # Check if the file has an allowed extension
         if file and allowed_file(file.filename):
-            # Read the Excel file
-            df = pd.read_excel(file)
+            try:
+                files = {'file': (file.filename, file, 'multipart/form-data')}
+                response = requests.post(FASTAPI_URL, files=files)
 
-            # Check if the required columns exist
-            if 'Account Number' not in df.columns or 'File Name' not in df.columns:
-                flash('The Excel file must contain "Account Number" and "File Name" columns.', 'error')
-                return redirect(request.url)
+                if response.status_code == 200:
+                    output_filename = 'processed_data.csv'
+                    with open(output_filename, 'wb') as f:
+                        f.write(response.content)
 
-            # Call the AI system to group the data
-            grouped_data = call_ai_system(df)
-
-            # Save the grouped data to a new Excel file
-            output_filename = 'grouped_data.xlsx'
-            grouped_data.to_excel(output_filename, index=False)
-
-            # Send the new Excel file to the user for download
-            return send_file(output_filename, as_attachment=True)
+                    return jsonify({"download_url": url_for('download_file', filename=output_filename, _external=True)})
+                else:
+                    return jsonify({"error": "Processing failed"}), 500
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
         else:
-            flash('Invalid file type. Please upload an Excel file.', 'error')
+            return jsonify({"error": "Invalid file type"}), 400
 
     return render_template('upload.html')
 
-@app.route('/success')
-def success():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-    return render_template('success.html')
+@app.route('/download/<filename>')
+def download_file(filename):
+    return send_file(filename, as_attachment=True)
 
 @app.route('/logout')
 def logout():
