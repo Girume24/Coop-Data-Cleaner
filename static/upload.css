@@ -327,3 +327,123 @@ nav {
 .hidden {
     display: none;
 }
+
+/* Drag and Drop Area */
+.drag-drop-area {
+    border: 2px dashed #00adef;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    margin: 20px 0;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.drag-drop-area.dragover {
+    background: #e6f7ff;
+}
+
+.drag-drop-area i {
+    font-size: 40px;
+    color: #00adef;
+    margin-bottom: 15px;
+}
+
+.drag-drop-area p {
+    margin: 10px 0;
+    color: #333;
+}
+
+.drag-drop-area span {
+    display: block;
+    margin: 10px 0;
+    color: #666;
+}
+
+/* Classic File Input */
+#file-input {
+    margin: 15px auto;
+    display: block;
+}
+
+
+/* Sidebar Icons */
+.sidebar ul li a i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+/* File Input Label */
+.file-label {
+    display: inline-block;
+    background-color: #00adef;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.file-label:hover {
+    background-color: #0099cc;
+}
+
+/* Classic File Input */
+.file-input-container {
+    margin: 15px 0;
+}
+
+.file-input-container input[type="file"] {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Buttons with Icons */
+button, .download-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button {
+    background: #28a745;
+    color: white;
+}
+
+button:hover {
+    background: #218838;
+}
+
+.download-btn {
+    background: #00adef;
+    color: white;
+    text-decoration: none;
+}
+
+.download-btn:hover {
+    background-color: #0099cc;
+}
+
+/* Icons in Buttons */
+.upload-box button i,
+.download-btn i {
+    font-size: 18px;
+}
+
+/* Remove Uploaded Files Section */
+.uploaded-files {
+    display: none;
+}

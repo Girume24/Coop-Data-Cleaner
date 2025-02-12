@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Excel File – Coop Data Cleaner</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='upload.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
 <body>
@@ -25,16 +26,15 @@
         <nav class="sidebar">
             <div class="sidebar-background"></div>
             <ul>
-                <li><a href="#">Upload History</a></li>
-                <li><a href="#">Feedback</a></li>
-                <li><a href="#">Contacts</a></li>
-                <li><a href="#">Settings</a></li>
+                <li><a href="#"><i class="fas fa-history"></i> Upload History</a></li>
+                <li><a href="#"><i class="fas fa-comment-dots"></i> Feedback</a></li>
+                <li><a href="#"><i class="fas fa-address-book"></i> Contacts</a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
             </ul>
         </nav>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Combined Upload and Guide Section -->
             <div class="content-wrapper">
                 <!-- Upload Box -->
                 <div class="upload-box">
@@ -47,16 +47,26 @@
                     {% endif %}
                     {% endwith %}
                     <form id="upload-form" method="POST" enctype="multipart/form-data">
-                        <label class="file-label" for="file-input">Select Excel File</label>
-                        <input type="file" id="file-input" name="file" accept=".xlsx, .xls" required>
-                        <button type="submit">Upload and Process</button>
+                        <!-- Drag-and-Drop Area -->
+                        <div class="drag-drop-area" id="drag-drop-area">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag & Drop your file here</p>
+                            <span>OR</span>
+                            <!-- Classic File Input -->
+                            <input type="file" id="file-input" name="file" accept=".xlsx, .xls" required>
+                        </div>
+                        <button type="submit">
+                            <i class="fas fa-upload"></i> Upload and Process
+                        </button>
                     </form>
                     <p class="info-text">Supported file types: Excel (.xlsx, .xls)</p>
 
-                    <!-- Download Button (Hidden by Default) -->
+                    <!-- Download Section -->
                     <div id="download-section" class="hidden">
-                        <p>Your file is ready! Click the button below to download.</p>
-                        <a id="download-link" class="download-btn" href="#" download>Download Grouped Data</a>
+                        <p>Your file is ready! Click below to download.</p>
+                        <a id="download-link" class="download-btn" href="#" download>
+                            <i class="fas fa-download"></i> Download Grouped Data
+                        </a>
                     </div>
                 </div>
 
@@ -71,17 +81,9 @@
                     </ol>
                 </div>
             </div>
-
-            <!-- Uploaded Files Section (Outside Content Wrapper) -->
-            <div class="uploaded-files">
-                <h3>Uploaded Files</h3>
-                <ul id="file-list">
-                    <!-- Files will be displayed here dynamically -->
-                </ul>
-            </div>
         </main>
-
     </div>
+
     <!-- Loader -->
     <div class="loader" id="loader">
         <div class="loader-content">
@@ -91,59 +93,53 @@
     </div>
 
     <script>
-        document.getElementById('upload-form').addEventListener('submit', async function (event) {
-            event.preventDefault();
+        // Drag-and-Drop Functionality
+        const dragDropArea = document.getElementById('drag-drop-area');
+        const fileInput = document.getElementById('file-input');
 
-            // Show the loader
-            const loader = document.getElementById('loader');
-            loader.style.display = 'flex';
-    
-            const formData = new FormData(this);
-            try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
+        dragDropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.add('dragover');
+        });
 
-                // Hide the loader
-                loader.style.display = 'none';
-    
-                // Check if response is JSON
-                const contentType = response.headers.get("content-type");
-                if (contentType && contentType.includes("application/json")) {
-                    const result = await response.json();
-                    if (result.download_url) {
-                        showDownloadButton(result.download_url);
-                    }
-                    if (result.file_name) {
-                        displayUploadedFile(result.file_name);
-                    }
-                } else {
-                    // If response is not JSON, show an error
-                    const errorText = await response.text();
-                    alert("Error: " + errorText);
-                }
-            } catch (error) {
-                alert("An error occurred: " + error.message);
+        dragDropArea.addEventListener('dragleave', () => {
+            dragDropArea.classList.remove('dragover');
+        });
+
+        dragDropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.remove('dragover');
+            fileInput.files = e.dataTransfer.files;
+        });
+
+        // File Input Change Handler
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                dragDropArea.querySelector('p').textContent = fileInput.files[0].name;
             }
         });
-    
-        function showDownloadButton(downloadUrl) {
-            const downloadSection = document.getElementById('download-section');
-            const downloadLink = document.getElementById('download-link');
-            downloadLink.href = downloadUrl;
-            downloadSection.classList.remove('hidden');
-        }
-    
-        function displayUploadedFile(fileName) {
-            const fileList = document.getElementById('file-list');
-            const listItem = document.createElement('li');
-            listItem.textContent = fileName;
-            fileList.appendChild(listItem);
-        }
+
+        // Form Submission
+        document.getElementById('upload-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const loader = document.getElementById('loader');
+            loader.style.display = 'flex';
+
+            try {
+                const formData = new FormData(this);
+                const response = await fetch('/upload', { method: 'POST', body: formData });
+                
+                loader.style.display = 'none';
+                const result = await response.json();
+                
+                if (result.download_url) {
+                    document.getElementById('download-section').classList.remove('hidden');
+                    document.getElementById('download-link').href = result.download_url;
+                }
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        });
     </script>
-    
-
 </body>
-
 </html>
