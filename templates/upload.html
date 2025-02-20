@@ -26,8 +26,8 @@
         <nav class="sidebar">
             <div class="sidebar-background"></div>
             <ul>
-                <li><a href="#"><i class="fas fa-history"></i> Upload History</a></li>
-                <li><a href="#"><i class="fas fa-comment-dots"></i> Feedback</a></li>
+                <li><a href="{{ url_for('upload_history') }}"><i class="fas fa-history"></i> Upload History</a></li>
+                <li><a href="{{ url_for('feedback') }}"><i class="fas fa-comment-dots"></i> Feedback</a></li>
                 <li><a href="#"><i class="fas fa-address-book"></i> Contacts</a></li>
                 <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
             </ul>
@@ -38,7 +38,7 @@
             <div class="content-wrapper">
                 <!-- Upload Box -->
                 <div class="upload-box">
-                    <h2>Upload Excel File</h2>
+                    <h2>Upload File</h2>
                     {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                     {% for category, message in messages %}

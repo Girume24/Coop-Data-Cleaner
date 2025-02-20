@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback – Coop Data Cleaner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='feedback.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <!-- Top Navigation Bar -->
+    <header>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Coop Data Cleaner Logo">
+            <h1>Coop Data Cleaner</h1>
+        </div>
+        <nav>
+            <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Left Navigation Bar -->
+        <nav class="sidebar">
+            <div class="sidebar-background"></div>
+            <ul>
+                <li><a href="{{ url_for('upload') }}"><i class="fas fa-upload"></i> Upload File</a></li>
+                <li><a href="{{ url_for('upload_history') }}"><i class="fas fa-history"></i> Upload History</a></li>
+                <li><a href="{{ url_for('feedback') }}"><i class="fas fa-comment-dots"></i> Feedback</a></li>
+                <li><a href="#"><i class="fas fa-address-book"></i> Contacts</a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <!-- Chat Feedback Section -->
+                <div class="chat-feedback">
+                    <h2>Feedback Chat</h2>
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+                    <div class="chat-box" id="chat-box">
+                        {% for entry in chat_feedback %}
+                        <div class="chat-message {% if entry.username == session.username %}your-message{% else %}other-message{% endif %}">
+                            {% if entry.username != session.username %}
+                            <img src="{{ entry.profile_pic }}" alt="Profile Picture" class="profile-pic">
+                            {% endif %}
+                            <div class="message-content">
+                                <span class="username">{{ entry.username }}</span>
+                                <p class="feedback-text">{{ entry.feedback }}</p>
+                                <span class="time">{{ entry.time }}</span>
+                            </div>
+                            {% if entry.username == session.username %}
+                            <img src="{{ entry.profile_pic }}" alt="Profile Picture" class="profile-pic">
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <form method="POST" class="chat-input" id="feedback-form">
+                        <textarea name="feedback" placeholder="Type your feedback here..." required></textarea>
+                        <button type="submit">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Scroll to the bottom of the chat box
+        const chatBox = document.getElementById('chat-box');
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Handle form submission
+        document.getElementById('feedback-form').addEventListener('submit', async function (e) {
+            e.preventDefault(); // Prevent the form from reloading the page
+
+            const formData = new FormData(this);
+            try {
+                const response = await fetch('/feedback', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // Reload the page to show the new feedback
+                    window.location.reload();
+                } else {
+                    alert('Failed to submit feedback. Please try again.');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+
+</html>

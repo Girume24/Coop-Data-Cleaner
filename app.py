@@ -1,5 +1,6 @@
-import requests
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file, jsonify
+import requests
+from datetime import datetime
 import os
 
 app = Flask(__name__)
@@ -17,6 +18,12 @@ USER_CREDENTIALS = {
 # Allowed file extensions
 ALLOWED_EXTENSIONS = {'xlsx', 'xls', 'csv'}
 
+# List to store upload history
+UPLOAD_HISTORY = []
+
+# List to store chat feedback
+CHAT_FEEDBACK = []
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -32,6 +39,8 @@ def login():
 
         if username == USER_CREDENTIALS['username'] and password == USER_CREDENTIALS['password']:
             session['logged_in'] = True
+            session['username'] = username  # Store username in session
+            session['profile_pic'] = url_for('static', filename='profile_pics/default.png')  # Default profile picture
             return redirect(url_for('upload'))
         else:
             flash('Invalid credentials. Please try again.', 'error')
@@ -60,15 +69,77 @@ def upload():
                     with open(output_filename, 'wb') as f:
                         f.write(response.content)
 
-                    return jsonify({"download_url": url_for('download_file', filename=output_filename, _external=True)})
+                    # Add to upload history
+                    upload_entry = {
+                        'username': session.get('username', 'Unknown'),
+                        'filename': file.filename,
+                        'upload_time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'status': 'Success',
+                        'download_url': url_for('download_file', filename=output_filename, _external=True)
+                    }
+                    UPLOAD_HISTORY.append(upload_entry)
+
+                    return jsonify({"download_url": upload_entry['download_url']})
                 else:
+                    # Add to upload history with failed status
+                    upload_entry = {
+                        'username': session.get('username', 'Unknown'),
+                        'filename': file.filename,
+                        'upload_time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'status': 'Failed',
+                        'error': 'Processing failed'
+                    }
+                    UPLOAD_HISTORY.append(upload_entry)
+
                     return jsonify({"error": "Processing failed"}), 500
             except Exception as e:
+                # Add to upload history with error status
+                upload_entry = {
+                    'username': session.get('username', 'Unknown'),
+                    'filename': file.filename,
+                    'upload_time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    'status': 'Error',
+                    'error': str(e)
+                }
+                UPLOAD_HISTORY.append(upload_entry)
+
                 return jsonify({"error": str(e)}), 500
         else:
             return jsonify({"error": "Invalid file type"}), 400
 
     return render_template('upload.html')
+
+@app.route('/upload-history')
+def upload_history():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    return render_template('upload_history.html', history=UPLOAD_HISTORY)
+
+@app.route('/feedback', methods=['GET', 'POST'])
+def feedback():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        feedback_text = request.form.get('feedback')
+        username = session.get('username', 'Unknown')
+        profile_pic = session.get('profile_pic', url_for('static', filename='profile_pics/default.png'))
+        feedback_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        if feedback_text:
+            feedback_entry = {
+                'username': username,
+                'profile_pic': profile_pic,
+                'feedback': feedback_text,
+                'time': feedback_time
+            }
+            CHAT_FEEDBACK.append(feedback_entry)
+            flash('Feedback sent!', 'success')
+        else:
+            flash('Feedback cannot be empty.', 'error')
+
+    return render_template('feedback.html', chat_feedback=CHAT_FEEDBACK, session=session)
 
 @app.route('/download/<filename>')
 def download_file(filename):
@@ -77,6 +148,8 @@ def download_file(filename):
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
+    session.pop('username', None)
+    session.pop('profile_pic', None)
     return redirect(url_for('login'))
 
 if __name__ == '__main__':

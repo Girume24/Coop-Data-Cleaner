@@ -1,0 +1,38 @@
+/* Upload History Table Styling */
+#upload-history-section {
+    margin-top: 20px;
+}
+
+#upload-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+#upload-history-table th, #upload-history-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+#upload-history-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+#upload-history-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#upload-history-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+#upload-history-table a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+#upload-history-table a:hover {
+    text-decoration: underline;
+}
